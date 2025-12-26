@@ -1,0 +1,15 @@
+exclude = [
+  ".direnv/**",
+]
+
+[formatting]
+array_auto_collapse = false
+reorder_keys = false
+
+[[rule]]
+include = ["**/Cargo.toml"]
+keys = ["dependencies"]
+
+[rule.formatting]
+inline_table_expand = false
+reorder_keys = true
