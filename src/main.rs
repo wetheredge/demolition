@@ -70,6 +70,7 @@ macro_rules! log_dry {
 fn main() {
     env_logger::Builder::from_env("DEMOLITION_LOG").init();
 
+    let device = &PathBuf::from(env!(os, "DEMOLITION_DEVICE", "/dev/mapper/crypted"));
     let mount_dir = &PathBuf::from(env!(os, "DEMOLITION_MOUNT_DIR", "./mnt"));
     let root_volume = mount_dir.join(env!(os, "DEMOLITION_ROOT_VOLUME", "root"));
     let backups_dir = mount_dir.join(env!(os, "DEMOLITION_BACKUP_DIR", "root-backups"));
@@ -91,7 +92,7 @@ fn main() {
     }
 
     let flags = MountFlags::NOATIME | MountFlags::NODEV | MountFlags::NOEXEC | MountFlags::NOSUID;
-    if let Err(err) = mount("/dev/mapper/crypted", mount_dir, "btrfs", flags, None) {
+    if let Err(err) = mount(device, mount_dir, "btrfs", flags, None) {
         bail!("mount failed: {err}");
     };
 
