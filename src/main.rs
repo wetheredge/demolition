@@ -83,6 +83,7 @@ fn main() {
     let keep_count = env!(from_str(u16), "DEMOLITION_KEEP_COUNT", "1");
     let dry_run = cfg!(debug_assertions);
 
+    log::trace!("mkdir '{}'", mount_dir.display());
     match fs::create_dir(mount_dir) {
         Ok(()) => log::debug!("created mount point"),
         Err(err) if err.kind() == io::ErrorKind::AlreadyExists => {
@@ -92,6 +93,11 @@ fn main() {
     }
 
     let flags = MountFlags::NOATIME | MountFlags::NODEV | MountFlags::NOEXEC | MountFlags::NOSUID;
+    log::trace!(
+        "mount -t btrfs '{}' '{}'",
+        device.display(),
+        mount_dir.display()
+    );
     if let Err(err) = mount(device, mount_dir, "btrfs", flags, None) {
         bail!("mount failed: {err}");
     };
@@ -102,6 +108,7 @@ fn main() {
             let created = created.format(&backup_format).to_string();
             let backup = backups_dir.join(created);
 
+            log::trace!("mv '{}' '{}'", root_volume.display(), backup.display());
             if dry_run {
                 log_dry!("mv '{}' '{}'", root_volume.display(), backup.display());
             } else if let Err(err) = fs::rename(&root_volume, backup) {
@@ -184,7 +191,7 @@ fn main() {
         }
     }
 
-    log::trace!("creating new root volume");
+    log::trace!("creating new root volume: '{}'", root_volume.display());
     if dry_run {
         log_dry!(
             "btrfs subvolume create --parents '{}'",
@@ -216,6 +223,7 @@ fn main() {
         }
     }
 
+    log::trace!("umount '{}'", mount_dir.display());
     if let Err(err) = unmount(mount_dir, UnmountFlags::empty()) {
         bail!("umount failed: {err}");
     }
