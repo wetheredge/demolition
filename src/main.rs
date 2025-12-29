@@ -103,7 +103,7 @@ fn main() {
 
             if dry_run {
                 log_dry!("mv '{}' '{}'", root_volume.display(), backup.display());
-            } else if let Err(err) = fs::rename(root_volume, backup) {
+            } else if let Err(err) = fs::rename(&root_volume, backup) {
                 bail!("failed to move existing root volume into backups: {err}");
             }
         }
@@ -179,6 +179,38 @@ fn main() {
                     "failed to get btrfs exit code while removing backup '{}': {err}",
                     backup.path().display()
                 );
+            }
+        }
+    }
+
+    log::trace!("creating new root volume");
+    if dry_run {
+        log_dry!(
+            "btrfs subvolume create --parents '{}'",
+            root_volume.display()
+        );
+    } else {
+        let mut cmd = Command::new("btrfs");
+        cmd.args(["subvolume", "create", "--parents"]);
+        cmd.arg(&root_volume);
+        cmd.stdin(Stdio::null());
+        match cmd.status() {
+            Ok(status) if status.success() => {}
+            Ok(status) => {
+                if let Some(code) = status.code() {
+                    log::warn!(
+                        "btrfs subvolume create --parents '{}' exitted with {code}",
+                        root_volume.display()
+                    )
+                } else {
+                    log::warn!(
+                        "btrfs subvolume create --parents '{}' exitted with unknown exit code",
+                        root_volume.display()
+                    )
+                }
+            }
+            Err(err) => {
+                log::warn!("failed to get btrfs exit code while creating empty root volume {err}");
             }
         }
     }
