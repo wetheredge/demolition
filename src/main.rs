@@ -104,6 +104,16 @@ fn main() {
 
     match root_volume.metadata().and_then(|m| m.created()) {
         Ok(created) => {
+            if !dry_run {
+                match fs::create_dir(&backups_dir) {
+                    Ok(()) => log::debug!("created backups dir"),
+                    Err(err) if err.kind() == io::ErrorKind::AlreadyExists => {
+                        log::debug!("backups dir already exists");
+                    }
+                    Err(err) => bail!("failed to create backups dir: {err}"),
+                }
+            }
+
             let created = chrono::DateTime::from(created);
             let created = created.format(&backup_format).to_string();
             let backup = backups_dir.join(created);
