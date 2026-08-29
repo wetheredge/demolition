@@ -7,6 +7,6 @@ license = "MPL-2.0"
 [dependencies]
 chrono = { version = "=0.4.45", default-features = false, features = ["std"] }
 env_logger = "=0.11.11"
-humantime = "=2.3.0"
-log = { version = "=0.4.33", features = ["std"] }
+humantime = "=2.4.0"
+log = { version = "=0.4.34", features = ["std"] }
 rustix = { version = "=1.1.4", features = ["mount"] }
